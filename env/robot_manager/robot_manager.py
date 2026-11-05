@@ -681,10 +681,15 @@ ROBOT_CLASS_REGISTRY = {
         "module": "x5",
         "classes": ("X5",),
     },
+    "soarm101": {
+        "module": "soarm101",
+        "classes": ("SOArm101",),
+    },
 }
 
 
 ROBOT_CONFIG_REGISTRY = {
     "franka": "franka",
     "x5": "x5",
+    "soarm101": "soarm101",
 }

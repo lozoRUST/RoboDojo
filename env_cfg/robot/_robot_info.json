@@ -2,5 +2,9 @@
     "dual_x5": {
         "arm_dim": [6, 6],
         "ee_dim": [1, 1]
+    },
+    "soarm101": {
+        "arm_dim": [5],
+        "ee_dim": [1]
     }
 }

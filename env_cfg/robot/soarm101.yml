@@ -1,0 +1,7 @@
+robots:
+  - robot_type: arm
+    robot_name: soarm101
+    coupled: false
+    default_root_pos: [0.0, 0.0, 0.765]
+    default_root_rot: [1.0, 0.0, 0.0, 0.0]
+    need_planner: false

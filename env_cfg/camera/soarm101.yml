@@ -1,0 +1,32 @@
+# Three RGB views. Orientations are local USD camera quaternions (w,x,y,z).
+# Wrist pose follows the camera author's CAD optical frame; intrinsics are a
+# provisional pinhole preset, not calibrated to a physical camera.
+annotator:
+  common:
+    enabled: true
+    rgb_capture:
+      type: rgb
+      device: cuda
+
+cam_head:
+  camera:
+    type: third_view
+    mesh: pinhole
+    pos: [0.65, -0.75, 1.25]
+    ori: [0.8204951056450398, 0.48773340815903116, 0.15235644418089397, 0.25630337121205565]
+
+cam_side:
+  camera:
+    type: third_view
+    mesh: pinhole
+    pos: [0.65, 0.55, 1.2]
+    ori: [0.2524071765394812, 0.1587278217877316, 0.5081298786303519, 0.8080223525775714]
+
+cam_wrist:
+  camera:
+    type: third_view
+    mesh: pinhole
+    # Move 14 mm forward from CAD optical reference to clear opaque lens mesh.
+    pos: [0.0025000474574315814, 0.06160666670407508, -0.018899158344586876]
+    ori: [-0.9764944287857054, 0.2155426420627191, 1.758213874686332e-06, 1.0196489319547209e-07]
+    mount_link: robot0/gripper_link
