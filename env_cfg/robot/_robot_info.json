@@ -6,5 +6,9 @@
     "soarm101": {
         "arm_dim": [5],
         "ee_dim": [1]
+    },
+    "piper": {
+        "arm_dim": [6],
+        "ee_dim": [1]
     }
 }

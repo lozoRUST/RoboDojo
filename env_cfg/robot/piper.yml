@@ -1,0 +1,8 @@
+# Single Piper at the table edge facing +y, centred between the dual_x5 mounts.
+robots:
+  - robot_type: arm
+    robot_name: piper
+    coupled: false
+    default_root_pos: [0.0, -0.45, 0.765]
+    default_root_rot: [0.7071068, 0.0, 0.0, 0.7071068]
+    need_planner: false

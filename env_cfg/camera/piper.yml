@@ -1,0 +1,32 @@
+# Three RGB views. Orientations are local USD camera quaternions (w,x,y,z).
+# Head faces the Piper from across the table, side looks over its right shoulder; the wrist camera sits on the
+# gripper body beside the finger travel, pitched 20 deg towards the fingertips. Intrinsics are
+# a provisional pinhole preset, not calibrated to a physical camera.
+annotator:
+  common:
+    enabled: true
+    rgb_capture:
+      type: rgb
+      device: cuda
+
+cam_head:
+  camera:
+    type: third_view
+    mesh: pinhole
+    pos: [0.0, 0.45, 1.35]
+    ori: [0.0, 0.0, 0.429286, 0.903168]
+
+cam_side:
+  camera:
+    type: third_view
+    mesh: pinhole
+    pos: [0.75, 0.2, 1.15]
+    ori: [0.447743, 0.296789, 0.466016, 0.703044]
+
+cam_wrist:
+  camera:
+    type: third_view
+    mesh: pinhole
+    pos: [0.055, 0.0, 0.03]
+    ori: [0.122788, 0.696364, 0.696364, 0.122788]
+    mount_link: robot0/link6
