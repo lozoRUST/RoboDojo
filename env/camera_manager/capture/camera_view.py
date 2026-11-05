@@ -168,6 +168,9 @@ class CameraView(XFormPrim):
         Exception: No prim was matched using the prim_paths_expr provided.
     """
 
+    # latch so the device-mismatch note in get_data prints once per process
+    _mismatch_warned = False
+
     def __init__(
         self,
         prim_paths_expr: str = None,
@@ -308,6 +311,30 @@ class CameraView(XFormPrim):
         else:
             tiled_data: wp.array = data
             info = {}
+        expected_pixels = self.tiled_resolution[0] * self.tiled_resolution[1] * spec["channels"]
+        actual_size = int(np.prod(tiled_data.shape))
+        if actual_size < expected_pixels:
+            raise RuntimeError(f"Camera warming up: {actual_size}/{expected_pixels} values")
+        # Some annotator paths ignore the requested device and hand back CPU
+        # data while the caller pre-allocated CUDA outputs; a warp launch on
+        # the data's device would then run a CPU kernel over CUDA pointers and
+        # hang. Follow the maintainers' mismatch policy instead: the output
+        # follows the data's device.
+        if hasattr(tiled_data, "device") and out is not None and hasattr(out, "device"):
+            if str(out.device) != str(tiled_data.device):
+                if not CameraView._mismatch_warned:
+                    CameraView._mismatch_warned = True
+                    print(
+                        f"[camera_view] device mismatch: data={tiled_data.device} "
+                        f"{tuple(tiled_data.shape)} vs out={out.device} "
+                        f"{tuple(out.shape)}; output follows data device from now on",
+                        flush=True,
+                    )
+                out = wp.zeros(
+                    (len(self.prims), self.camera_resolution[1], self.camera_resolution[0], spec["channels"]),
+                    dtype=spec["dtype"],
+                    device=tiled_data.device,
+                )
         # tiled image
         if tiled:
             shape = (*self.tiled_resolution, spec["channels"])

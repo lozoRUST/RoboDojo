@@ -31,6 +31,8 @@ class MetaControl:  # Single control signal for one env step
                     val = real_gripper_val + (scale[1] - scale[0]) * gripper_eps
                 else:
                     val = real_gripper_val - (scale[1] - scale[0]) * gripper_eps
+            if len(robot.gripper_joints_name) == 1:
+                return [val]
             return [val, val * robot.gripper_move["mimic"][1] + robot.gripper_move["mimic"][2]]
 
         res = dict()
@@ -38,7 +40,9 @@ class MetaControl:  # Single control signal for one env step
         for key in obs_list:
             if key in self.control_info_dict.keys():
                 if key.endswith("ee_joint_state"):
-                    end_effector_name = robot_manager.restore_name(deepcopy(key))
+                    # Preserve the single-arm gripper name "ee". restore_name
+                    # maps it to "arm", which cannot identify a gripper.
+                    end_effector_name = key.removesuffix("_joint_state")
                     robot = robot_manager.get_robot_by_gripper_name(end_effector_name)
                     if robot.ee_type == "gripper":
                         position = get_dict(key)["position"]

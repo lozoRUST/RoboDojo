@@ -36,6 +36,11 @@ ZERO_DELAY_KIT_SETTINGS = {
     "/app/updateOrder/checkForHydraRenderComplete": "1000",
     "/app/renderer/waitIdle": "true",
     "/app/hydraEngine/waitIdle": "true",
+    # Headless boots never initialize /rtx/dataWindowNDC/* (settings.get -> None);
+    # replicator's _resize_data_for_overscan then trips over `None != 0` being
+    # True and crashes on None - None. Fitting output to the data window skips
+    # that branch (we use no overscan, so behaviour is unchanged).
+    "/rtx/dataWindow/fitOutputToDataWindow": "true",
 }
 
 _warned_missing_settings = False

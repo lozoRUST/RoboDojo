@@ -99,6 +99,7 @@ class TiledCaptureManager:
                 for annotator_name, annotator_setting in annotators.items():
                     type_annotator = annotator_setting["type"]
                     self.annotator_type[cam_id].append(type_annotator)
+                    self.annotator_device[cam_id].append(annotator_setting.get("device", "cuda"))
             prim_paths_by_cam_id = [row[cam_id] for row in self.camera_prim_paths]
 
             camera_resolution = self.cameras[0][cam_id]._resolution
@@ -114,7 +115,7 @@ class TiledCaptureManager:
             # Pre-allocate output buffers for this camera's annotators
             self._output_buffers[cam_id] = {}
 
-            for annotator_name in self.annotator_type[cam_id]:
+            for annotator_idx, annotator_name in enumerate(self.annotator_type[cam_id]):
                 from env.camera_manager.capture.camera_view import ANNOTATOR_SPEC
 
                 spec = ANNOTATOR_SPEC.get(annotator_name)
@@ -127,7 +128,8 @@ class TiledCaptureManager:
                 # Pre-allocate warp array on CUDA to reuse memory
                 import warp as wp
 
-                self._output_buffers[cam_id][annotator_name] = wp.zeros(shape, dtype=spec["dtype"], device="cuda:0")
+                device = self.annotator_device[cam_id][annotator_idx]
+                self._output_buffers[cam_id][annotator_name] = wp.zeros(shape, dtype=spec["dtype"], device=device)
 
     def step(self, env_ids: List[int] = None, cam_ids: List[int] = None) -> List[List[List[any]]]:
         """
@@ -151,9 +153,10 @@ class TiledCaptureManager:
             cam_data = {}
             annotator_names = self.annotator_type[cam_id]
             for annotator_name in annotator_names:
+                # Replicator may return CPU data even when the annotator was
+                # requested on CUDA. Avoid forcing a Warp output buffer here;
+                # CameraView converts the returned frame to NumPy safely.
                 pre_allocated_out = None
-                if cam_id in self._output_buffers and annotator_name in self._output_buffers[cam_id]:
-                    pre_allocated_out = self._output_buffers[cam_id][annotator_name]
 
                 out, info = self.tiled_cameras[cam_id].get_data(annotator_name, out=pre_allocated_out)
 

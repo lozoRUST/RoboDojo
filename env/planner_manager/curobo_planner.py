@@ -16,10 +16,26 @@ import torch
 import transforms3d as t3d
 import yaml
 
-from env.global_configs import BATCH_NUM
+from env.global_configs import BATCH_NUM, ROOT_DIR
 from utils.transformer import calculate_target_pose
 
 _curobo_runtime.cuda_graph_reset = True
+
+
+def _expand_assets_path(obj):
+    """Recursively replace the ${ASSETS_PATH} placeholder in a loaded yml.
+
+    Newer robot asset ymls (e.g. curobo_tmp.yml on the asset repo main) use
+    ${ASSETS_PATH} for asset_root_path; the placeholder means the workspace
+    root (the yml appends /Assets/... itself), so it expands to ROOT_DIR.
+    """
+    if isinstance(obj, dict):
+        return {k: _expand_assets_path(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_expand_assets_path(v) for v in obj]
+    if isinstance(obj, str):
+        return obj.replace("${ASSETS_PATH}", ROOT_DIR)
+    return obj
 
 
 class CuroboPlanner:
@@ -42,7 +58,7 @@ class CuroboPlanner:
         self.all_joints = all_joints
         # translate from baselink to arm's base
         with open(self.yml_path) as f:
-            yml_data = yaml.safe_load(f)
+            yml_data = _expand_assets_path(yaml.safe_load(f))
         self.frame_bias = yml_data["planner"]["frame_bias"]
 
         self.robot_cfg, self.scene_model = self._build_robot_and_scene_cfg(yml_data, table_height)
